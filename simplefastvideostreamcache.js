@@ -64,6 +64,54 @@ function generateVideoCache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCo
 						});			
 	},chunkExpireSeconds*1000);
 
+	videoCache.get = function(filePath, offsetByte,callback){
+		filePath = decodeURI(urlParse.parse(filePath).pathname);
+		let rangeStart = offsetByte;
+		let rangeStop = videoCache.chunkSize; 
+		if(rangeStart)
+		{
+
+		}
+		else
+		{
+			rangeStart=0;
+		}
+
+		if(rangeStop)
+		{
+
+		}
+		else
+		{
+			rangeStop = rangeStart + videoCache.chunkSize;
+		}
+							
+		let dataVideo = [];
+		let cacheStart = rangeStart - (rangeStart%videoCache.chunkSize);
+		videoCache.cache.get(filePath+"##@@##"+cacheStart,function(video){
+			perfCountObj.videoCacheHit++;
+			if(video.startByte>=0)
+			{
+				let offs = rangeStart%videoCache.chunkSize;
+				let remain = videoCache.chunkSize - offs;
+				if(remain>video.maxSize)
+					remain = video.maxSize;
+				if(remain>video.data.length)
+					remain=video.data.length;
+				let vidChunk = video.data.slice(offs,offs+remain);
+				if(remain>vidChunk.length)
+					remain=vidChunk.length;
+				let result={ data:vidChunk, offs:rangeStart, remain:remain, maxSize:video.maxSize};
+				callback(result);
+				return;
+			}
+			else
+			{
+				callback(false);
+				return;
+			}								
+		});
+	};
 	videoCache.stream = function(req,res){
 		let url2 = decodeURI(urlParse.parse(req.url).pathname);
 		let rangeStart = 0;
