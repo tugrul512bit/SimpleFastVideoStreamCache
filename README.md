@@ -1,7 +1,7 @@
 # SimpleFastVideoStreamCache
 Simple (2 files), fast (1.8GB/s by 1 core of fx8150), video (mp4,ogg,..), stream cache (LRU-CLOCK async cache eviction optimization) for NodeJS http requests.
 
-Example:
+Simple approach:
 
 ```cpp
 
@@ -20,6 +20,59 @@ options.agent = new http.Agent({ keepAlive: true });
 
 const server = http.createServer(options,async (req, res) => {					
 	video.stream(req,res);
+});
+
+server.listen(8000, "0.0.0.0", () => {
+  console.log("Server running");
+});
+  
+```
+
+Customizable approach:
+
+```cpp
+
+const cache = require("./simplefastvideostreamcache.js").generateVideoCache; 
+const chunkSize = 1024*1024; // size (in bytes) of each video stream chunk
+const numCachedChunks = 100; // total chunks cached (shared for all video files accessed)
+const chunkExpireSeconds = 100; // when a chunk not accessed for 100 seconds, it is marked as removable
+const perfCountObj={}; // just to see performance of cache (total hits and misses where each miss resolves into a hit later so hits = miss + cache hit)
+setInterval(function(){console.log(perfCountObj);},1000);
+
+const video = cache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCountObj)
+
+const http = require('http'); 
+const options = {};
+options.agent = new http.Agent({ keepAlive: true });
+
+const server = http.createServer(options,async (req, res) => {					
+
+	let startByte=0;
+	if(req.headers.range)
+	{
+		if(req.headers.range.split("=")[1])
+		{
+			startByte = req.headers.range.split("=")[1].split("-")[0];
+			startByte = parseInt(startByte,10);
+		}
+	} 
+
+	video.get(req.url,startByte,function(vid){
+		if(vid)
+		{	
+			res.writeHead(206,{
+				"Content-Range": "bytes " + vid.offs + "-" + (vid.offs+vid.remain-1) + "/" + vid.maxSize,
+				"Accept-Ranges": "bytes",
+				"Content-Length": vid.remain,
+				"Content-Type": ("video/"+(req.url.indexOf(".mp4")!== -1 ? "mp4" : "ogg"))
+			});
+			res.end(vid.data);
+		}
+		else
+		{
+			// some error
+		}
+	});
 });
 
 server.listen(8000, "0.0.0.0", () => {
