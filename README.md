@@ -12,7 +12,7 @@ const chunkExpireSeconds = 100;
 const perfCountObj={};
 setInterval(function(){console.log(perfCountObj);},1000);
 
-const video = new cache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCountObj)
+const video = cache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCountObj)
 
 const http = require('http'); 
 const options = {};
