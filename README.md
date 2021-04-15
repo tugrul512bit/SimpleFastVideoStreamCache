@@ -143,3 +143,13 @@ Percentage of the requests served within a certain time (ms)
 
 
 ```
+
+How it works:
+
+- clients can click any arbitrary time point of video in browser and browser can request any arbitrary blob offset
+- the cache only remembers fixed ranges of blobs which are broadcasted to all asynchronous requests but with Buffer.slice() method to take only the necessary part of blob. This makes this cache memory efficient compared to arbitrary ranged blob caching. 
+
+For example, user clicks "second 5", browser requests 150000 offset. It comes from cached blob #1234. When user clicks "second 5.5", browser requests ~165000 offset and it comes from same cached blob with just a bit less buffer length instead of polluting cache with different range.
+
+- the clock-lru cache eviction algorithm supports N(number of cache blobs / cache size) in-flight cache-misses (file streams from HDD to cache) and overlappable with asynchronous cache-hits (streaming from cache-RAM to client)
+- Dependencies are "fs", "path", "url" and "stream". These are core modules of NodeJS.
