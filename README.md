@@ -6,10 +6,10 @@ Example:
 ```cpp
 
 const cache = require("./simplefastvideostreamcache.js").generateVideoCache; 
-const chunkSize = 1024*1024;
-const numCachedChunks = 100;
-const chunkExpireSeconds = 100;
-const perfCountObj={};
+const chunkSize = 1024*1024; // size (in bytes) of each video stream chunk
+const numCachedChunks = 100; // total chunks cached (shared for all video files accessed)
+const chunkExpireSeconds = 100; // when a chunk not accessed for 100 seconds, it is marked as removable
+const perfCountObj={}; // just to see performance of cache (total hits and misses where each miss resolves into a hit later so hits = miss + cache hit)
 setInterval(function(){console.log(perfCountObj);},1000);
 
 const video = cache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCountObj)
