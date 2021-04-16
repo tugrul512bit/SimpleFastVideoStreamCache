@@ -112,7 +112,7 @@ function generateVideoCache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCo
 			}								
 		});
 	};
-	videoCache.stream = function(req,res){
+	videoCache.stream = function(req,res,vidType){
 		let url2 = decodeURI(urlParse.parse(req.url).pathname);
 		let rangeStart = 0;
 		let rangeStop = videoCache.chunkSize; 
@@ -175,7 +175,7 @@ function generateVideoCache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCo
 					"Content-Range": "bytes " + rangeStart + "-" + (rangeStart+remain-1) + "/" + video.maxSize,
 					"Accept-Ranges": "bytes",
 					"Content-Length": remain,
-					"Content-Type": ("video/"+(url2.indexOf(".mp4")!== -1 ? "mp4" : "ogg"))
+					"Content-Type": (vidType[0])
 				});
 										
 
@@ -187,7 +187,7 @@ function generateVideoCache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCo
 			{
 				res.writeHead(404);
 				perfCountObj.videoCacheHit++;									
-				res.end("404: mp4/ogg video file not found.");
+				res.end("404: "+vidType[1]+" video file not found.");
 				return;
 			}								
 		});
@@ -195,4 +195,25 @@ function generateVideoCache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCo
 	return videoCache;
 }
 
+const videoTypes = {	
+	"mp4":["video/mp4",".mp4"], 
+	"ogg":["video/ogg",".ogg"], 
+	"ogv":["video/ogv",".ogv"],
+	"webm":["video/webm",".webm"]
+};
+
+function getVidType(url)
+{
+	let vidType = ["",""];
+	let urlType = url.split(".");
+	urlType = urlType[urlType.length-1];
+	if(urlType in videoTypes)
+	{
+		vidType = videoTypes[urlType];
+	}
+	return vidType;
+}
+
+exports.videoTypes = videoTypes;
 exports.generateVideoCache = generateVideoCache;
+exports.getVidType = getVidType;
