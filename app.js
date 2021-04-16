@@ -7,7 +7,8 @@ const chunkSize = 1024*64; // it was 1M
 const numCachedChunks = 300;
 const chunkExpireSeconds = 100;
 const perfCountObj={};
-setInterval(function(){console.log(perfCountObj);},1000);
+
+// setInterval(function(){console.log(perfCountObj);},1000);
 
 const video = cache(chunkSize,numCachedChunks,chunkExpireSeconds, perfCountObj)
 
