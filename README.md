@@ -1,5 +1,5 @@
 # SimpleFastVideoStreamCache
-Simple (2 files), fast (1.8GB/s by 1 core of fx8150), video (mp4,ogg,..), stream cache (LRU-CLOCK async cache eviction optimization) for NodeJS http requests.
+Simple (2 files), fast (1.8GB/s by 1 core of fx8150), video (mp4,ogg,..), stream cache (LRU-CLOCK async cache eviction optimization for video chunks) for NodeJS http requests.
 
 Simple approach:
 
